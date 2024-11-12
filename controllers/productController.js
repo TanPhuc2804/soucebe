@@ -3,6 +3,7 @@ const User = require('../models/user')
 const _ = require('lodash')
 const cloudinary = require('../untils/cloudinary')
 const fs = require('fs')
+const Order = require('../models/orders')
 
 exports.getAllProduct = async (req, res) => {
   try {
@@ -211,6 +212,13 @@ exports.deleteOneProduct = async (req, res, next) => {
     const user = await User.findById(userID)
     if (user.role === 'admin') {
       const { productID } = req.params
+      const count = await Order.countDocuments({ "productDetail.productID": productID })
+      if (count > 0) {
+        return res.status(400).json({
+          status: 'fail',
+          message:"Sản đã được mua. Không được xóa!"
+        })
+      }
       const product = await Product.findByIdAndDelete(productID)
       res.status(200).json({
         status: 'success'

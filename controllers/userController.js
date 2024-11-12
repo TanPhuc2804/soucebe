@@ -140,12 +140,21 @@ exports.updateUser = async (req, res, next) => {
     try {
         const { userID } = req.params;
         const { firstName, lastName, phone, password } = req.body;
+        let newPass =""
+        if(password){
+            const hashPass = await bcrypt.hash(password,10)
+            newPass = hashPass
+        }else{
+            const user = await User.findById(userID)
+            newPass = user.password
+        }
+
 
         const user = await User.findByIdAndUpdate(userID, {
             firstName,
             lastName,
             phone,
-            password
+            password:newPass
         }, { new: true });
 
         if (!user) {

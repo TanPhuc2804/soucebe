@@ -1,7 +1,7 @@
 const { findById } = require('../models/code');
 const Code = require('../models/code');
 const User = require('../models/user');
-
+const Order = require("../models/orders")
 exports.getAllCode = async (req, res) => {
     try {
         const code = await Code.find({});
@@ -51,6 +51,14 @@ exports.deleteOneCode = async (req, res) => {
         const { userID } = req.user;
         const admin = await User.findById(userID);
         if (admin.role === 'admin') {
+            const count = await Order.countDocuments({ saleCode: req.params.id })
+
+            
+            if (count > 0) {
+                return res.status(400).json({
+                    messenger: "Voucher đã được đặt nên không xóa được"
+                });
+            }
             await Code.findByIdAndDelete(req.params.id);
             res.json({
                 status: "success"
